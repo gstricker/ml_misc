@@ -64,7 +64,7 @@ For better understanding this I try to sample from a circle:
 
 1. Given two values x and y, a unity circle can be defined by the function x^2 + y^2 = 1
 
-2. Thus we sample x and y from $$U(-1,1)$$ and reject if x^2 + y^2 > 1
+2. Thus we sample x and y from U(-1,1) and reject if x^2 + y^2 > 1
 
 ```r
 library(data.table)
