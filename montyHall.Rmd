@@ -1,0 +1,147 @@
+# Motivation
+
+This script is written to simulate different versions of the Monty Hall problem.
+For a more complete take, please see the wikipedia article or any books it refers to. 
+https://en.wikipedia.org/wiki/Monty_Hall_problem
+
+# The original problem
+
+1. You pick one of three doors. Behind one of the doors is a car, behind the others a goat.
+2. The show master opens one of the unchosen doors with a goat behind.
+3. You have the chance to switch the door or stay
+
+In all steps we assume by default that decisions are made uniformly random over the possible states of events.
+
+# The assumptions
+
+In the original problem the chance of winning if you always switch is 2/3, while if always staying is 1/3. These however
+comes with a few assumptions:
+
+1. The host must always open a door that was not picked by the contestant.
+2. The host must always open a door to reveal a goat and never the car.
+3. The host must always offer the chance to switch between the originally chosen door and the remaining closed door.
+
+There are also more obvious assumptions that are rather typical for game shows and thus typially presumed:
+
+4. The car is placed randomly
+5. The door is chosen randomly
+6. The host (if possible) chooses the door to open randomly
+7. There is no switch probability. It's a binary decision.
+
+ADD EXPLANATION HOW THE VARIATION WILL WORK.
+
+# Simulation 1: Normal game
+
+In the case of the normal game. The strategies 'always switching' and 'never switching' should be successfull in 2/3 and 1/3 of the cases, respectively.
+
+## Function and variable definitions
+
+```r
+doors <- 1:3
+carProb <- rep(1/3, 3)
+ownProb <- rep(1/3, 3)
+hostProb <- rep(1/2, 2)
+switchProb <- c(1, 0) ## always stay
+rounds <- 10000
+
+play <- function(doors, carProb, ownProb, hostProb, switchProb) {
+    car <- sample(doors, 1, prob = carProb)
+    own <- sample(doors, 1, prob = ownProb)
+    
+    if(car == own) {
+        host <- sample(doors[-car], 1, prob = hostProb)
+    }
+    else {
+        host <- doors[-c(car, own)]
+    }
+
+    other <- doors[-c(own, host)]
+    picked <- sample(c(own, other), 1, prob = switchProb)
+
+    res <- ifelse(picked == car, 1, 0)
+    return(res)
+}
+```
+
+## Results
+
+```r
+alwaysSwitch <- sapply(1:rounds, function(x) {
+    play(doors, carProb, ownProb, hostProb, switchProb = c(0,1))
+})
+
+neverSwitch <- sapply(1:rounds, function(x) {
+    play(doors, carProb, ownProb, hostProb, switchProb)
+})
+
+switchPath <- cumsum(alwaysSwitch)/(1:length(alwaysSwitch))
+noSwitchPath <- cumsum(neverSwitch)/(1:length(neverSwitch))
+switchRes <- round(mean(switchPath), digits = 3)
+noSwitchRes <- round(mean(noSwitchPath), digits = 3)
+
+## plot results
+plot(1:rounds, switchPath, type = "l", ylim = c(0, 1), xlab = "rounds", ylab = "win fraction")
+lines(1:rounds, noSwitchPath, col = "red")
+legend("topright", legend = c(paste("switch =", switchRes), paste("don't switch =", noSwitchRes)),
+                              fill = c("black", "red"))
+```
+
+# Simulation 2: The host opens any door randomly
+
+In the case of this game the host can open any door with uniform probability. Thus a third obvious strategy can be added: If host opens the players door, than switch if it is a goat. The probabilities should now become:
+
+CONTINUE HERE
+
+The strategies 'always switching' and 'never switching' should be successfull in 2/3 and 1/3 of the cases, respectively.
+
+## Function and variable definitions
+
+```r
+doors <- 1:3
+carProb <- rep(1/3, 3)
+ownProb <- rep(1/3, 3)
+hostProb <- rep(1/3, 3)
+switchProb <- c(1, 0) ## always stay
+rounds <- 10000
+
+play <- function(doors, carProb, ownProb, hostProb, switchProb) {
+    car <- sample(doors, 1, prob = carProb)
+    own <- sample(doors, 1, prob = ownProb)
+    
+    if(car == own) {
+        host <- sample(doors[-car], 1, prob = hostProb)
+    }
+    else {
+        host <- doors[-c(car, own)]
+    }
+
+    other <- doors[-c(own, host)]
+    picked <- sample(c(own, other), 1, prob = switchProb)
+
+    res <- ifelse(picked == car, 1, 0)
+    return(res)
+}
+```
+
+## Results
+
+```r
+alwaysSwitch <- sapply(1:rounds, function(x) {
+    play(doors, carProb, ownProb, hostProb, switchProb = c(0,1))
+})
+
+neverSwitch <- sapply(1:rounds, function(x) {
+    play(doors, carProb, ownProb, hostProb, switchProb)
+})
+
+switchPath <- cumsum(alwaysSwitch)/(1:length(alwaysSwitch))
+noSwitchPath <- cumsum(neverSwitch)/(1:length(neverSwitch))
+switchRes <- round(mean(switchPath), digits = 3)
+noSwitchRes <- round(mean(noSwitchPath), digits = 3)
+
+## plot results
+plot(1:rounds, switchPath, type = "l", ylim = c(0, 1), xlab = "rounds", ylab = "win fraction")
+lines(1:rounds, noSwitchPath, col = "red")
+legend("topright", legend = c(paste("switch =", switchRes), paste("don't switch =", noSwitchRes)),
+                              fill = c("black", "red"))
+```
