@@ -1,6 +1,7 @@
 ---
 title: "Rejection sampling"
-output: pdf_document
+output: html_document
+date: '`r format(Sys.time(), "%d %B, %Y")`'
 ---
 ## Motivation
 
@@ -11,7 +12,9 @@ The idea is to sample from a beta distribution with parameters:
 $\alpha = 3$ and $\beta = 6$
 
 ```{r}
-curve(dbeta(x, 3,6),0,1)
+alpha <- 3
+beta <- 6
+curve(dbeta(x, alpha, beta),0,1)
 ```
 
 For this we can draw randomly from a uniform distribution and evaluate those values with the beta density function, providing
@@ -19,13 +22,14 @@ a sort of acceptance weights if we set them proportional to the initially used u
 densities by the maximal density to normalize the values to the [0,1] interval just like the observations from U(0,1)
 
 ```{r}
-sampled <- data.frame(proposal = runif(100000,0,1))
-sampled$targetDensity <- dbeta(sampled$proposal, 3,6)
-maxDens = max(sampled$targetDensity, na.rm = T)
-sampled$accepted = ifelse(runif(100000,0,1) < sampled$targetDensity / maxDens, TRUE, FALSE)
+k <- 1e5
+sampled <- data.frame(proposal = runif(k, 0, 1))
+sampled$targetDensity <- dbeta(sampled$proposal, alpha, beta)
+maxDens = max(sampled$targetDensity, na.rm = TRUE)
+sampled$accepted = ifelse(runif(k, 0, 1) < sampled$targetDensity / maxDens, TRUE, FALSE)
 
 hist(sampled$proposal[sampled$accepted], freq = FALSE, col = "grey", breaks = 100)
-curve(dbeta(x, 3,6),0,1, add = T, col = "red")
+curve(dbeta(x, alpha, beta), 0, 1, add = TRUE, col = "red")
 ```
 
 A reason why the random observations from the prior distribution have to be proportional to the posterior density is that the density of the random observation has to encapsulate the posterior density in order to ensure that all possible values of the posterior can be sampled. 
@@ -40,13 +44,13 @@ hist(sampled$proposal[sampled$accepted], freq = FALSE, col = "red", breaks = 100
 In this plot the grey area is the density of randomly drown observations from the uniform distribution. While the red area is the normalized density of the beta distribution. It is clear to see that the density works like a weight for the values drown between 0 and 1. If we wouldn't have normalized the density, the prior distribution would not have been able to capture the entirety of the beta density.
 
 ```{r}
-sampled <- data.frame(proposal = runif(100000,0,1))
-sampled$targetDensity <- dbeta(sampled$proposal, 3,6)
-maxDens = max(sampled$targetDensity, na.rm = T)
-sampled$accepted = ifelse(runif(100000,0,1) < sampled$targetDensity, TRUE, FALSE)
+sampled <- data.frame(proposal = runif(k, 0, 1))
+sampled$targetDensity <- dbeta(sampled$proposal, alpha, beta)
+maxDens = max(sampled$targetDensity, na.rm = TRUE)
+sampled$accepted = ifelse(runif(k, 0, 1) < sampled$targetDensity, TRUE, FALSE)
 
 hist(sampled$proposal[sampled$accepted], freq = FALSE, col = "grey", breaks = 100)
-curve(dbeta(x, 3,6),0,1, add = T, col = "red")
+curve(dbeta(x, alpha, beta), 0, 1, add = TRUE, col = "red")
 ```
 
 ```{r}
@@ -61,9 +65,9 @@ hist(sampled$proposal[sampled$accepted], freq = FALSE, col = "red",
 
 For better understanding this I try to sample from a circle:
 
-1. Given two values x and y, a unity circle can be defined by the function x^2 + y^2 = 1
+1. Given two values x and y, a unity circle can be defined by the function $x^2 + y^2 = 1$
 
-2. Thus we sample x and y from U(-1,1) and reject if x^2 + y^2 > 1
+2. Thus we sample x and y from U(-1,1) and reject if $x^2 + y^2 > 1$
 
 ```{r}
 library(data.table)
@@ -76,4 +80,5 @@ plot(sampled$x, sampled$y)
 points(sampled$x[sampled$accepted], sampled$y[sampled$accepted], col = "red")
 ```
 
-## More formal
+## TODO
+This is too simplistic and needs to be written down more formal with the respective math
