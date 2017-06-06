@@ -1,6 +1,6 @@
 # Motivation
 
-This script is written to simulate different versions of the Monty Hall problem.
+This script is written to simulate the Monty Hall problem.
 For a more complete take, please see the wikipedia article or any books it refers to. 
 https://en.wikipedia.org/wiki/Monty_Hall_problem
 
@@ -21,22 +21,19 @@ comes with a few assumptions:
 2. The host must always open a door to reveal a goat and never the car.
 3. The host must always offer the chance to switch between the originally chosen door and the remaining closed door.
 
-There are also more obvious assumptions that are rather typical for game shows and thus typially presumed:
+There are also more obvious assumptions that are rather typical for game shows and thus typically presumed:
 
 4. The car is placed randomly
 5. The door is chosen randomly
 6. The host (if possible) chooses the door to open randomly
-7. There is no switch probability. It's a binary decision.
-
-ADD EXPLANATION HOW THE VARIATION WILL WORK.
 
 # Simulation 1: Normal game
 
-In the case of the normal game. The strategies 'always switching' and 'never switching' should be successfull in 2/3 and 1/3 of the cases, respectively.
+In the case of the normal game. The strategies *always switching* and *never switching* should be successfull in 2/3 and 1/3 of the cases, respectively.
 
 ## Function and variable definitions
 
-```r
+```{r}
 doors <- 1:3
 carProb <- rep(1/3, 3)
 ownProb <- rep(1/3, 3)
@@ -65,7 +62,7 @@ play <- function(doors, carProb, ownProb, hostProb, switchProb) {
 
 ## Results
 
-```r
+```{r}
 alwaysSwitch <- sapply(1:rounds, function(x) {
     play(doors, carProb, ownProb, hostProb, switchProb = c(0,1))
 })
@@ -86,38 +83,28 @@ legend("topright", legend = c(paste("switch =", switchRes), paste("don't switch 
                               fill = c("black", "red"))
 ```
 
-# Simulation 2: The host opens any door randomly
+# Simulation 2: Conditional probability
 
-In the case of this game the host can open any door with uniform probability. Thus a third obvious strategy can be added: If host opens the players door, than switch if it is a goat. The probabilities should now become:
-
-CONTINUE HERE
-
-The strategies 'always switching' and 'never switching' should be successfull in 2/3 and 1/3 of the cases, respectively.
+The rather sloppy formulation of the question can be confusing in the sense that it might pose different questions and result in different answers. In the case of the above game the answer was given to the question of always switching vs. always staying *no matter what happens during the actual game*. That is we basically decide in advance. Computing the conditional probability in a certain situation does however result in a different outcome. For example given the choice of switching conditioned on the choice of door 1 and the host opened door two will result in a half-half probability of switching. That is because the host does not chose the door randomly anymore, but has a clear preference (stated by the condition). 
 
 ## Function and variable definitions
 
-```r
+Note the difference in the code to represent this situation. Now the conditions are established first and *then* the car gets placed. In the above game the car was placed in the very beginning. Thus resulting in a different situation, where the host has to pick a door *given* the car placement and the player's door.
+
+```{r}
 doors <- 1:3
-carProb <- rep(1/3, 3)
 ownProb <- rep(1/3, 3)
-hostProb <- rep(1/3, 3)
 switchProb <- c(1, 0) ## always stay
 rounds <- 10000
 
-play <- function(doors, carProb, ownProb, hostProb, switchProb) {
-    car <- sample(doors, 1, prob = carProb)
+play <- function(doors, ownProb, switchProb) {
     own <- sample(doors, 1, prob = ownProb)
+    host <- doors[-own][1]
     
-    if(car == own) {
-        host <- sample(doors[-car], 1, prob = hostProb)
-    }
-    else {
-        host <- doors[-c(car, own)]
-    }
-
     other <- doors[-c(own, host)]
     picked <- sample(c(own, other), 1, prob = switchProb)
 
+    car <- sample(doors[-host], 1)
     res <- ifelse(picked == car, 1, 0)
     return(res)
 }
@@ -125,13 +112,13 @@ play <- function(doors, carProb, ownProb, hostProb, switchProb) {
 
 ## Results
 
-```r
+```{r}
 alwaysSwitch <- sapply(1:rounds, function(x) {
-    play(doors, carProb, ownProb, hostProb, switchProb = c(0,1))
+    play(doors, ownProb, switchProb = c(0,1))
 })
 
 neverSwitch <- sapply(1:rounds, function(x) {
-    play(doors, carProb, ownProb, hostProb, switchProb)
+    play(doors, ownProb, switchProb)
 })
 
 switchPath <- cumsum(alwaysSwitch)/(1:length(alwaysSwitch))

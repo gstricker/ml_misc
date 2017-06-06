@@ -79,6 +79,3 @@ sampled$accepted <- ifelse(sampled$eval <= 1, TRUE, FALSE)
 plot(sampled$x, sampled$y)
 points(sampled$x[sampled$accepted], sampled$y[sampled$accepted], col = "red")
 ```
-
-## TODO
-This is too simplistic and needs to be written down more formal with the respective math
